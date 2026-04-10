@@ -4,10 +4,22 @@
   "description": "MySQL MCP Server - Model Context Protocol server for MySQL databases",
   "author": "",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md",
+    "README.zh-TW.md"
+  ],
   "bin": {
     "mysql-mcp": "dist/main.js"
   },
   "scripts": {
+    "preversion": "pnpm run lint && pnpm run test && pnpm run build",
+    "version": "git add -A",
+    "postversion": "git push --follow-tags",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
