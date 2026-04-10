@@ -2,8 +2,16 @@
   "name": "@johnson.lee/mysql-mcp-server",
   "version": "0.0.2-0",
   "description": "MySQL MCP Server - Model Context Protocol server for MySQL databases",
-  "author": "",
+  "author": "Johnson Lee",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CobaltBlue3699/mysql-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CobaltBlue3699/mysql-mcp-server/issues"
+  },
+  "homepage": "https://github.com/CobaltBlue3699/mysql-mcp-server#readme",
   "publishConfig": {
     "access": "public"
   },
