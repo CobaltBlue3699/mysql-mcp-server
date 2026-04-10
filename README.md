@@ -1,74 +1,104 @@
+---
+<p align="center">
+<img src="https://img.shields.io/npm/v/@johnson.lee/mysql-mcp-server?style=flat&label=npm" alt="npm version">
+<img src="https://img.shields.io/npm/l/@johnson.lee/mysql-mcp-server" alt="license MIT">
+</p>
+</p>
+---
+
 # MySQL MCP Server
 
-A Model Context Protocol server for MySQL databases, built with NestJS and MCP-Nest.
+A Model Context Protocol (MCP) server for MySQL databases, built with NestJS and MCP-Nest. Enables AI assistants like Claude and Cursor to interact with MySQL databases through a standardized protocol.
+
+[English](./README.md) · [繁體中文](./README.zh-TW.md)
+
+---
+
+## Overview
+
+MySQL MCP Server exposes MySQL database operations as MCP tools, allowing AI assistants to:
+
+- Query and explore database schemas
+- Execute SQL queries with permission controls
+- List tables, describe table structures, and browse databases
+- Run in multiple transport modes (stdio, HTTP SSE, Streamable HTTP)
 
 ## Features
 
-- 🔌 **Connection Pool** - Efficient MySQL connection management
-- 🔒 **Permission Control** - Granular SQL operation permissions
-- 🔍 **DRY_RUN Mode** - Validate SQL without returning data
-- 📝 **MCP Tools** - Standardized database operations
-- 🌲 **Graceful Shutdown** - Clean resource cleanup
-- 📁 **File Logging** - Configurable log output
+|                        | Description                                                              |
+| ---------------------- | ------------------------------------------------------------------------ |
+| **Connection Pool**    | Efficient MySQL connection management with configurable pool size        |
+| **Permission Control** | Granular SQL operation permissions (SELECT, INSERT, UPDATE, DELETE, DDL) |
+| **DRY_RUN Mode**       | Validate SQL queries without returning actual data                       |
+| **MCP Tools**          | Standardized database operations exposed via Model Context Protocol      |
+| **Graceful Shutdown**  | Clean resource cleanup on process termination                            |
+| **File Logging**       | Configurable log output with rotation support                            |
+
+## Prerequisites
+
+- Node.js 18+
+- MySQL 5.7+ database
+- npm or pnpm package manager
 
 ## Installation
 
-### Global Installation (Recommended)
-
 ```bash
+# Global installation (recommended)
 npm install -g @johnson.lee/mysql-mcp-server
-```
 
-### Using npx
-
-```bash
+# Or use npx
 npx @johnson.lee/mysql-mcp-server
 ```
 
-## Configuration
-
-Set environment variables:
+## Quick Start
 
 ```bash
+# Set environment variables
 export DB_HOST=localhost
 export DB_PORT=3306
 export DB_USER=root
 export DB_PASSWORD=your_password
 export DB_NAME=your_database
+
+# Run the server
+mysql-mcp
 ```
+
+## Configuration
+
+Configure via environment variables:
+
+### Database Connection
+
+| Variable      | Default   | Description          |
+| ------------- | --------- | -------------------- |
+| `DB_HOST`     | localhost | MySQL host           |
+| `DB_PORT`     | 3306      | MySQL port           |
+| `DB_USER`     | root      | MySQL user           |
+| `DB_PASSWORD` | -         | MySQL password       |
+| `DB_NAME`     | test_db   | Database name        |
+| `DB_POOL_MIN` | 2         | Min pool connections |
+| `DB_POOL_MAX` | 10        | Max pool connections |
 
 ### Permission Control
 
 | Variable       | Default | Description                      |
 | -------------- | ------- | -------------------------------- |
-| `ALLOW_SELECT` | `true`  | Allow SELECT queries             |
-| `ALLOW_VIEW`   | `true`  | Allow SHOW / DESCRIBE            |
-| `ALLOW_INSERT` | `false` | Allow INSERT                     |
-| `ALLOW_UPDATE` | `false` | Allow UPDATE                     |
-| `ALLOW_DELETE` | `false` | Allow DELETE                     |
-| `ALLOW_DDL`    | `false` | Allow CREATE/ALTER/DROP/TRUNCATE |
+| `ALLOW_SELECT` | true    | Allow SELECT queries             |
+| `ALLOW_VIEW`   | true    | Allow SHOW / DESCRIBE            |
+| `ALLOW_INSERT` | false   | Allow INSERT                     |
+| `ALLOW_UPDATE` | false   | Allow UPDATE                     |
+| `ALLOW_DELETE` | false   | Allow DELETE                     |
+| `ALLOW_DDL`    | false   | Allow CREATE/ALTER/DROP/TRUNCATE |
 
-### DRY_RUN Mode
+### Server Options
 
-```bash
-export DRY_RUN=true
-```
-
-When enabled, `execute_query` returns columns and rowCount but rows are set to null.
-
-## Usage
-
-### Direct Run
-
-```bash
-mcp-server-mysql
-```
-
-### Using npx
-
-```bash
-npx @johnson.lee/mysql-mcp-server
-```
+| Variable        | Default | Description                               |
+| --------------- | ------- | ----------------------------------------- |
+| `MCP_TRANSPORT` | stdio   | Transport: stdio/http-sse/streamable-http |
+| `LOG_LEVEL`     | info    | Log level: debug/info/warn/error          |
+| `LOG_DIR`       | ./logs  | Log directory                             |
+| `DRY_RUN`       | false   | Validate SQL without returning data       |
 
 ## Editor Integration
 
@@ -144,27 +174,8 @@ Execute SQL queries.
 
 ### list_databases
 
-List all available databases.
-
-## Environment Variables
-
-| Variable        | Default     | Description                               |
-| --------------- | ----------- | ----------------------------------------- |
-| `DB_HOST`       | `localhost` | MySQL host                                |
-| `DB_PORT`       | `3306`      | MySQL port                                |
-| `DB_USER`       | `root`      | MySQL user                                |
-| `DB_PASSWORD`   | -           | MySQL password                            |
-| `DB_NAME`       | `test_db`   | Database name                             |
-| `DB_POOL_MIN`   | `2`         | Min pool connections                      |
-| `DB_POOL_MAX`   | `10`        | Max pool connections                      |
-| `MCP_TRANSPORT` | `stdio`     | Transport: stdio/http-sse/streamable-http |
-| `LOG_LEVEL`     | `info`      | Log level: debug/info/warn/error          |
-| `LOG_DIR`       | `./logs`    | Log directory                             |
-
-## License
-
-MIT
+List all available databases on the MySQL server.
 
 ---
 
-[中文版](./README.zh-TW.md)
+Built with [NestJS](https://nestjs.com) and [MCP-Nest](https://github.com/rekog/mcp-nest)
