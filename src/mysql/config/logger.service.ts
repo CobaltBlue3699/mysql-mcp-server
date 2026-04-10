@@ -10,12 +10,20 @@ export class MySqlLoggerService extends ConsoleLogger {
 
   constructor() {
     const config = loadMySqlConfig();
-    const logLevels: LogLevel[] = ['error', 'warn', 'log', 'debug', 'verbose', 'fatal'];
+    const logLevels: LogLevel[] = [
+      'error',
+      'warn',
+      'log',
+      'debug',
+      'verbose',
+      'fatal',
+    ];
     const levelIndex = logLevels.indexOf(config.logging.level as LogLevel);
-    const activeLevels = levelIndex !== -1 ? logLevels.slice(0, levelIndex + 1) : logLevels;
+    const activeLevels =
+      levelIndex !== -1 ? logLevels.slice(0, levelIndex + 1) : logLevels;
 
     super('MySQL-MCP', {
-      logLevels: activeLevels as LogLevel[],
+      logLevels: activeLevels,
     });
 
     this.logDir = config.logging.dir;
