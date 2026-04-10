@@ -9,7 +9,7 @@ import { McpModule } from '@rekog/mcp-nest';
 @Module({
   imports: [
     ConfigModule,
-    LoggerModule.forRoot(),
+    LoggerModule,
     MySqlModule,
     ToolsModule,
     McpModule.forRootAsync({
