@@ -30,6 +30,8 @@ export class ExecuteQueryTool {
     const config = loadMySqlConfig();
     const isDryRun = config.dryRun;
 
+    // According to specification: DRY_RUN mode SHALL execute the query
+    // to return metadata and actual rowCount, but SHALL NOT return rows data.
     const result = await this.mysqlService.executeQuery(sql, timeout);
 
     if (isDryRun) {
@@ -39,11 +41,12 @@ export class ExecuteQueryTool {
             type: 'text',
             text: JSON.stringify(
               {
+                dryRun: true,
                 columns: result.columns,
                 rowCount: result.rowCount,
                 rows: null,
-                dryRun: true,
-                message: 'DRY_RUN mode: Query validated but data not returned',
+                message:
+                  'DRY_RUN mode: Query validated but data not returned. Set DRY_RUN=false to get actual data.',
               },
               null,
               2,

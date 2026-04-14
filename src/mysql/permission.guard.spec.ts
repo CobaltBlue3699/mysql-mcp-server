@@ -61,6 +61,22 @@ describe('PermissionGuardService', () => {
       expect(service.detectOperation('SHOW TABLES')).toBe('VIEW');
       expect(service.detectOperation('DESCRIBE users')).toBe('VIEW');
     });
+
+    it('should correctly identify operation when multiple keywords are present', () => {
+      // CURRENT IMPLEMENTATION BUG: This might fail if SELECT is first in OPERATION_PATTERNS
+      const sql = "INSERT INTO users (name) VALUES ('SELECT me')";
+      expect(service.detectOperation(sql)).toBe('INSERT');
+    });
+
+    it('should correctly identify operation even with multi-line queries', () => {
+      const sql = `
+        -- This is a comment
+        /* Multi-line
+           comment */
+        SELECT * FROM users
+      `;
+      expect(service.detectOperation(sql)).toBe('SELECT');
+    });
   });
 
   describe('checkPermission', () => {
@@ -76,6 +92,27 @@ describe('PermissionGuardService', () => {
       );
       expect(result.allowed).toBe(false);
       expect(result.message).toContain('not allowed');
+    });
+
+    it('should restrict operations to SELECT and VIEW in DRY_RUN mode', () => {
+      process.env.DRY_RUN = 'true';
+      process.env.ALLOW_UPDATE = 'true'; // Permissions allow it, but dryRun should block it
+
+      // SELECT still allowed
+      expect(service.checkPermission('SELECT * FROM users').allowed).toBe(true);
+
+      // VIEW still allowed
+      expect(service.checkPermission('DESCRIBE users').allowed).toBe(true);
+
+      // UPDATE should be denied despite ALLOW_UPDATE=true
+      const result = service.checkPermission('UPDATE users SET name = ?');
+      expect(result.allowed).toBe(false);
+      expect(result.message).toContain(
+        'Only SELECT and VIEW operations are allowed in DRY_RUN mode',
+      );
+
+      delete process.env.DRY_RUN;
+      delete process.env.ALLOW_UPDATE;
     });
   });
 });
