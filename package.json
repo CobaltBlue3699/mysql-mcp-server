@@ -1,6 +1,6 @@
 {
   "name": "@johnson.lee/mysql-mcp-server",
-  "version": "0.0.2-3",
+  "version": "0.0.2-4",
   "description": "MySQL MCP Server - Model Context Protocol server for MySQL databases",
   "author": "Johnson Lee",
   "license": "MIT",
