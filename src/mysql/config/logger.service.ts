@@ -1,10 +1,10 @@
-import { ConsoleLogger, Injectable, LogLevel } from '@nestjs/common';
+import { ConsoleLogger, Injectable, LogLevel, OnModuleDestroy } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadMySqlConfig } from './config.module';
 
 @Injectable()
-export class MySqlLoggerService extends ConsoleLogger {
+export class MySqlLoggerService extends ConsoleLogger implements OnModuleDestroy {
   // NestJS uses 'log' instead of 'info' — map project levels to NestJS equivalents.
   private static readonly LEVEL_MAP: Partial<Record<string, LogLevel>> = {
     info: 'log',
@@ -12,6 +12,7 @@ export class MySqlLoggerService extends ConsoleLogger {
 
   private logDir: string;
   private isStdio: boolean;
+  private readonly streams = new Map<string, fs.WriteStream>();
 
   constructor() {
     const config = loadMySqlConfig();
@@ -77,6 +78,13 @@ export class MySqlLoggerService extends ConsoleLogger {
     this.writeToFile('fatal', message, context);
   }
 
+  onModuleDestroy() {
+    for (const stream of this.streams.values()) {
+      stream.end();
+    }
+    this.streams.clear();
+  }
+
   /**
    * Overriding this method to ensure logs go to stderr when using stdio transport
    * to avoid breaking the MCP protocol which uses stdout.
@@ -91,6 +99,18 @@ export class MySqlLoggerService extends ConsoleLogger {
     super.printMessages(messages, context, logLevel, stream);
   }
 
+  private getStream(level: string): fs.WriteStream {
+    if (!this.streams.has(level)) {
+      const filePath = path.join(this.logDir, `${level}.log`);
+      const stream = fs.createWriteStream(filePath, { flags: 'a' });
+      stream.on('error', (err) => {
+        process.stderr.write(`Log stream error [${level}]: ${err.message}\n`);
+      });
+      this.streams.set(level, stream);
+    }
+    return this.streams.get(level)!;
+  }
+
   private writeToFile(
     level: string,
     message: any,
@@ -102,13 +122,8 @@ export class MySqlLoggerService extends ConsoleLogger {
       const ctx = context ? ` [${context}]` : '';
       const stk = stack ? `\n${stack}` : '';
       const logMessage = `[${timestamp}] [${level.toUpperCase()}]${ctx} ${message}${stk}\n`;
-
-      const filePath = path.join(this.logDir, `${level}.log`);
-      // Use synchronous for simplicity in this project as it matches previous behavior
-      // but ideally this should be a stream in a high-traffic app.
-      fs.appendFileSync(filePath, logMessage);
+      this.getStream(level).write(logMessage);
     } catch (err) {
-      // Fallback to stderr if file writing fails
       const errorMessage = err instanceof Error ? err.message : String(err);
       process.stderr.write(`Failed to write to log file: ${errorMessage}\n`);
     }
