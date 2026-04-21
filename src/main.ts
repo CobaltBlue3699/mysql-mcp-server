@@ -1,33 +1,39 @@
 #!/usr/bin/env node
+import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
-import { Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { loadMySqlConfig } from './mysql/config/config.module';
 import { MySqlLoggerService } from './mysql/config/logger.service';
 
 async function bootstrap() {
   const loggerService = new MySqlLoggerService();
-  const logger = new Logger('Bootstrap');
+  const ctx = 'Bootstrap';
 
-  logger.log('Starting MySQL MCP Server...');
+  loggerService.log('Starting MySQL MCP Server...', ctx);
 
   const config = loadMySqlConfig();
-  logger.log(
+  loggerService.log(
     `Database: ${config.database.host}:${config.database.port}/${config.database.name}`,
+    ctx,
   );
-  logger.log(`MCP Transport: ${config.mcp.type}`);
-  logger.log(`Log Level: ${config.logging.level}`);
+  loggerService.log(`MCP Transport: ${config.mcp.type}`, ctx);
+  loggerService.log(`Log Level: ${config.logging.level}`, ctx);
+  loggerService.log(`Log dir: ${path.resolve(config.logging.dir)}`, ctx);
 
   if (config.dryRun) {
-    logger.warn('DRY_RUN mode is enabled - query results will not be returned');
+    loggerService.warn(
+      'DRY_RUN mode is enabled - query results will not be returned',
+      ctx,
+    );
   }
 
   const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_NAME'];
   const missing = requiredEnvVars.filter((v) => !process.env[v]);
 
   if (missing.length > 0) {
-    logger.warn(
+    loggerService.warn(
       `Missing optional environment variables: ${missing.join(', ')}`,
+      ctx,
     );
   }
 
@@ -37,11 +43,19 @@ async function bootstrap() {
 
   await app.init();
 
-  logger.log(`MCP Server ready on ${config.mcp.type} transport`);
-  logger.log(`Server: ${config.mcp.serverName} v${config.mcp.serverVersion}`);
+  loggerService.log(`MCP Server ready on ${config.mcp.type} transport`, ctx);
+  loggerService.log(
+    `Server: ${config.mcp.serverName} v${config.mcp.serverVersion}`,
+    ctx,
+  );
 }
 
 bootstrap().catch((err) => {
-  console.error('Failed to bootstrap application:', err);
+  const loggerService = new MySqlLoggerService();
+  const message =
+    err instanceof Error ? `${err.message}\n${err.stack}` : String(err);
+  loggerService.error('Failed to bootstrap application', message, 'Bootstrap');
+  process.stderr.write(`Failed to bootstrap application: ${message}\n`);
+  loggerService.onModuleDestroy();
   process.exit(1);
 });
