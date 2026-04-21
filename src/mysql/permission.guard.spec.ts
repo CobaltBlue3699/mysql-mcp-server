@@ -94,6 +94,14 @@ describe('PermissionGuardService', () => {
       expect(result.message).toContain('not allowed');
     });
 
+    it('should deny UNKNOWN operations with a clear message', () => {
+      const result = service.checkPermission('MERGE INTO users USING source');
+      expect(result.allowed).toBe(false);
+      expect(result.operation).toBe('UNKNOWN');
+      expect(result.message).toContain('Unrecognized SQL operation type');
+      expect(result.message).not.toContain('ALLOW_UNKNOWN');
+    });
+
     it('should restrict operations to SELECT and VIEW in DRY_RUN mode', () => {
       process.env.DRY_RUN = 'true';
       process.env.ALLOW_UPDATE = 'true'; // Permissions allow it, but dryRun should block it

@@ -50,6 +50,15 @@ export class PermissionGuardService {
       };
     }
 
+    if (operation === 'UNKNOWN') {
+      return {
+        allowed: false,
+        operation,
+        message:
+          'Unrecognized SQL operation type. Only SELECT, INSERT, UPDATE, DELETE, DDL, and VIEW are supported.',
+      };
+    }
+
     const permissionKey =
       `allow${operation.charAt(0) + operation.slice(1).toLowerCase()}` as keyof MySqlConfig['permissions'];
     const isAllowed = config.permissions[permissionKey] ?? false;
@@ -58,7 +67,7 @@ export class PermissionGuardService {
       return {
         allowed: false,
         operation,
-        message: `${operation} not allowed (ALLOW_${operation}=false)`,
+        message: `${operation} operation is not allowed. Set ALLOW_${operation}=true to enable it.`,
       };
     }
 
