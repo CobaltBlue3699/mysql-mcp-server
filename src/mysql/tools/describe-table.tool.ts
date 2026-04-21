@@ -11,10 +11,19 @@ export class DescribeTableTool {
     name: 'describe_table',
     description: 'Get the structure of a specific table',
     parameters: z.object({
-      tableName: z.string().describe('The name of the table to describe'),
+      tableName: z
+        .string()
+        .regex(
+          /^[\w$]+$/,
+          'Table name must contain only letters, digits, underscores, or $',
+        )
+        .describe('The name of the table to describe'),
     }),
   })
   async describeTable({ tableName }: { tableName: string }) {
+    if (!/^[\w$]+$/.test(tableName)) {
+      throw new Error(`Invalid table name: "${tableName}"`);
+    }
     const description = await this.mysqlService.describeTable(tableName);
     return {
       content: [

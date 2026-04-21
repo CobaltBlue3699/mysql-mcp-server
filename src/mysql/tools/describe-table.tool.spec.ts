@@ -53,5 +53,21 @@ describe('DescribeTableTool', () => {
       };
       expect(parsed.columns).toHaveLength(2);
     });
+
+    it('should propagate error when table does not exist', async () => {
+      (mockMySqlService.describeTable as jest.Mock).mockRejectedValueOnce(
+        new Error("Table 'db.unknown' doesn't exist"),
+      );
+      await expect(
+        tool.describeTable({ tableName: 'unknown' }),
+      ).rejects.toThrow("Table 'db.unknown' doesn't exist");
+    });
+
+    it('should reject table names with SQL injection characters', async () => {
+      await expect(
+        tool.describeTable({ tableName: 'users`; DROP TABLE users; --' }),
+      ).rejects.toThrow('Invalid table name');
+      expect(mockMySqlService.describeTable).not.toHaveBeenCalled();
+    });
   });
 });

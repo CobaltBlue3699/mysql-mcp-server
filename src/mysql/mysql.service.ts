@@ -67,6 +67,9 @@ export class MySqlService implements OnModuleInit, OnModuleDestroy {
   }
 
   async describeTable(tableName: string): Promise<TableDescription> {
+    if (!/^[\w$]+$/.test(tableName)) {
+      throw new Error(`Invalid table name: "${tableName}"`);
+    }
     this.ensurePool();
     const [rows] = await this.pool!.query<mysql.RowDataPacket[]>(
       `DESCRIBE \`${tableName}\``,
