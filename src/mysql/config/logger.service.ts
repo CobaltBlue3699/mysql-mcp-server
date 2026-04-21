@@ -20,6 +20,7 @@ export class MySqlLoggerService
 
   private logDir: string;
   private isStdio: boolean;
+  private filePrefix: string;
   private readonly streams = new Map<string, fs.WriteStream>();
 
   constructor() {
@@ -44,6 +45,7 @@ export class MySqlLoggerService
 
     this.logDir = config.logging.dir;
     this.isStdio = config.mcp.type === 'stdio';
+    this.filePrefix = config.mcp.serverName.replace(/[^a-zA-Z0-9_-]/g, '_');
 
     if (!fs.existsSync(this.logDir)) {
       fs.mkdirSync(this.logDir, { recursive: true });
@@ -109,7 +111,10 @@ export class MySqlLoggerService
 
   private getStream(level: string): fs.WriteStream {
     if (!this.streams.has(level)) {
-      const filePath = path.join(this.logDir, `${level}.log`);
+      const filePath = path.join(
+        this.logDir,
+        `${this.filePrefix}-${level}.log`,
+      );
       const stream = fs.createWriteStream(filePath, { flags: 'a' });
       stream.on('error', (err) => {
         process.stderr.write(`Log stream error [${level}]: ${err.message}\n`);
