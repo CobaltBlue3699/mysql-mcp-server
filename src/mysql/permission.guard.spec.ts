@@ -102,25 +102,68 @@ describe('PermissionGuardService', () => {
       expect(result.message).not.toContain('ALLOW_UNKNOWN');
     });
 
-    it('should restrict operations to SELECT and VIEW in DRY_RUN mode', () => {
-      process.env.DRY_RUN = 'true';
-      process.env.ALLOW_UPDATE = 'true'; // Permissions allow it, but dryRun should block it
+    describe('DRY_RUN mode', () => {
+      beforeEach(() => {
+        process.env.DRY_RUN = 'true';
+        process.env.ALLOW_INSERT = 'true';
+        process.env.ALLOW_UPDATE = 'true';
+        process.env.ALLOW_DELETE = 'true';
+        process.env.ALLOW_DDL = 'true';
+      });
 
-      // SELECT still allowed
-      expect(service.checkPermission('SELECT * FROM users').allowed).toBe(true);
+      afterEach(() => {
+        delete process.env.DRY_RUN;
+        delete process.env.ALLOW_INSERT;
+        delete process.env.ALLOW_UPDATE;
+        delete process.env.ALLOW_DELETE;
+        delete process.env.ALLOW_DDL;
+      });
 
-      // VIEW still allowed
-      expect(service.checkPermission('DESCRIBE users').allowed).toBe(true);
+      it('should still allow SELECT', () => {
+        expect(service.checkPermission('SELECT * FROM users').allowed).toBe(
+          true,
+        );
+      });
 
-      // UPDATE should be denied despite ALLOW_UPDATE=true
-      const result = service.checkPermission('UPDATE users SET name = ?');
-      expect(result.allowed).toBe(false);
-      expect(result.message).toContain(
-        'Only SELECT and VIEW operations are allowed in DRY_RUN mode',
-      );
+      it('should still allow VIEW', () => {
+        expect(service.checkPermission('DESCRIBE users').allowed).toBe(true);
+      });
 
-      delete process.env.DRY_RUN;
-      delete process.env.ALLOW_UPDATE;
+      it('should block INSERT even when ALLOW_INSERT=true', () => {
+        const result = service.checkPermission(
+          'INSERT INTO users (name) VALUES (?)',
+        );
+        expect(result.allowed).toBe(false);
+        expect(result.message).toContain(
+          'Only SELECT and VIEW operations are allowed in DRY_RUN mode',
+        );
+      });
+
+      it('should block UPDATE even when ALLOW_UPDATE=true', () => {
+        const result = service.checkPermission('UPDATE users SET name = ?');
+        expect(result.allowed).toBe(false);
+        expect(result.message).toContain(
+          'Only SELECT and VIEW operations are allowed in DRY_RUN mode',
+        );
+      });
+
+      it('should block DELETE even when ALLOW_DELETE=true', () => {
+        const result = service.checkPermission(
+          'DELETE FROM users WHERE id = 1',
+        );
+        expect(result.allowed).toBe(false);
+        expect(result.message).toContain(
+          'Only SELECT and VIEW operations are allowed in DRY_RUN mode',
+        );
+      });
+
+      it('should block DDL even when ALLOW_DDL=true', () => {
+        const result = service.checkPermission('DROP TABLE users');
+        expect(result.allowed).toBe(false);
+        expect(result.message).toContain(
+          'Only SELECT and VIEW operations are allowed in DRY_RUN mode',
+        );
+      });
     });
   });
 });
