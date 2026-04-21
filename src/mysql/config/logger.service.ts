@@ -5,6 +5,11 @@ import { loadMySqlConfig } from './config.module';
 
 @Injectable()
 export class MySqlLoggerService extends ConsoleLogger {
+  // NestJS uses 'log' instead of 'info' — map project levels to NestJS equivalents.
+  private static readonly LEVEL_MAP: Partial<Record<string, LogLevel>> = {
+    info: 'log',
+  };
+
   private logDir: string;
   private isStdio: boolean;
 
@@ -18,7 +23,9 @@ export class MySqlLoggerService extends ConsoleLogger {
       'verbose',
       'fatal',
     ];
-    const levelIndex = logLevels.indexOf(config.logging.level as LogLevel);
+    const nestLevel = (MySqlLoggerService.LEVEL_MAP[config.logging.level] ??
+      config.logging.level) as LogLevel;
+    const levelIndex = logLevels.indexOf(nestLevel);
     const activeLevels =
       levelIndex !== -1 ? logLevels.slice(0, levelIndex + 1) : logLevels;
 
