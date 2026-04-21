@@ -93,12 +93,13 @@ Configure via environment variables:
 
 ### Server Options
 
-| Variable        | Default | Description                               |
-| --------------- | ------- | ----------------------------------------- |
-| `MCP_TRANSPORT` | stdio   | Transport: stdio/http-sse/streamable-http |
-| `LOG_LEVEL`     | info    | Log level: debug/info/warn/error          |
-| `LOG_DIR`       | ./logs  | Log directory                             |
-| `DRY_RUN`       | false   | Validate SQL without returning data       |
+| Variable          | Default           | Description                               |
+| ----------------- | ----------------- | ----------------------------------------- |
+| `MCP_SERVER_NAME` | mysql-mcp-server  | Server name — used as log file prefix     |
+| `MCP_TRANSPORT`   | stdio             | Transport: stdio/http-sse/streamable-http |
+| `LOG_LEVEL`       | info              | Log level: debug/info/warn/error          |
+| `LOG_DIR`         | ./logs            | Log directory                             |
+| `DRY_RUN`         | false             | Validate SQL without returning data       |
 
 ## Editor Integration
 
@@ -142,6 +143,57 @@ Create `.cursor/mcp.json`:
     }
   }
 }
+```
+
+### Multi-Environment Setup
+
+You can register multiple instances to connect different databases simultaneously.
+Each instance should have a unique `MCP_SERVER_NAME`, which is also used as the **log file prefix** — e.g. `dev-info.log`, `prod-error.log`.
+
+> **Note:** All `env` values must be strings. Use `"true"` / `"false"`, not bare booleans.
+
+```json
+{
+  "mcpServers": {
+    "dev-mysql": {
+      "command": "npx",
+      "args": ["@johnson.lee/mysql-mcp-server"],
+      "env": {
+        "MCP_SERVER_NAME": "dev",
+        "DB_HOST": "dev-db.example.com",
+        "DB_PORT": "3306",
+        "DB_USER": "dev_user",
+        "DB_PASSWORD": "dev_password",
+        "DB_NAME": "dev_db",
+        "LOG_DIR": "/tmp/mcp-logs"
+      }
+    },
+    "prod-mysql": {
+      "command": "npx",
+      "args": ["@johnson.lee/mysql-mcp-server"],
+      "env": {
+        "MCP_SERVER_NAME": "prod",
+        "DB_HOST": "prod-db.example.com",
+        "DB_PORT": "3306",
+        "DB_USER": "prod_user",
+        "DB_PASSWORD": "prod_password",
+        "DB_NAME": "prod_db",
+        "LOG_DIR": "/tmp/mcp-logs",
+        "DRY_RUN": "true"
+      }
+    }
+  }
+}
+```
+
+With the above config, log files are written to `LOG_DIR` with the server name as prefix:
+
+```
+/tmp/mcp-logs/
+├── dev-info.log
+├── dev-error.log
+├── prod-info.log
+└── prod-error.log
 ```
 
 ## Available Tools

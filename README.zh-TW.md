@@ -93,12 +93,13 @@ mysql-mcp
 
 ### 伺服器選項
 
-| 變數            | 預設值 | 說明                                     |
-| --------------- | ------ | ---------------------------------------- |
-| `MCP_TRANSPORT` | stdio  | 傳輸模式：stdio/http-sse/streamable-http |
-| `LOG_LEVEL`     | info   | 日誌等級：debug/info/warn/error          |
-| `LOG_DIR`       | ./logs | 日誌目錄                                 |
-| `DRY_RUN`       | false  | 驗證 SQL 但不返回資料                    |
+| 變數              | 預設值           | 說明                                     |
+| ----------------- | ---------------- | ---------------------------------------- |
+| `MCP_SERVER_NAME` | mysql-mcp-server | 伺服器名稱，同時作為日誌檔案前綴         |
+| `MCP_TRANSPORT`   | stdio            | 傳輸模式：stdio/http-sse/streamable-http |
+| `LOG_LEVEL`       | info             | 日誌等級：debug/info/warn/error          |
+| `LOG_DIR`         | ./logs           | 日誌目錄                                 |
+| `DRY_RUN`         | false            | 驗證 SQL 但不返回資料                    |
 
 ## 編輯器整合
 
@@ -142,6 +143,56 @@ mysql-mcp
     }
   }
 }
+```
+
+### 多環境設定
+
+可同時註冊多個實例連接不同資料庫。每個實例應設定唯一的 `MCP_SERVER_NAME`，該值同時作為**日誌檔案前綴**，例如 `dev-info.log`、`prod-error.log`。
+
+> **注意：** 所有 `env` 值必須為字串。請使用 `"true"` / `"false"`，不可使用 boolean 型別。
+
+```json
+{
+  "mcpServers": {
+    "dev-mysql": {
+      "command": "npx",
+      "args": ["@johnson.lee/mysql-mcp-server"],
+      "env": {
+        "MCP_SERVER_NAME": "dev",
+        "DB_HOST": "dev-db.example.com",
+        "DB_PORT": "3306",
+        "DB_USER": "dev_user",
+        "DB_PASSWORD": "dev_password",
+        "DB_NAME": "dev_db",
+        "LOG_DIR": "/tmp/mcp-logs"
+      }
+    },
+    "prod-mysql": {
+      "command": "npx",
+      "args": ["@johnson.lee/mysql-mcp-server"],
+      "env": {
+        "MCP_SERVER_NAME": "prod",
+        "DB_HOST": "prod-db.example.com",
+        "DB_PORT": "3306",
+        "DB_USER": "prod_user",
+        "DB_PASSWORD": "prod_password",
+        "DB_NAME": "prod_db",
+        "LOG_DIR": "/tmp/mcp-logs",
+        "DRY_RUN": "true"
+      }
+    }
+  }
+}
+```
+
+上述設定會在 `LOG_DIR` 下以伺服器名稱為前綴產生日誌檔案：
+
+```
+/tmp/mcp-logs/
+├── dev-info.log
+├── dev-error.log
+├── prod-info.log
+└── prod-error.log
 ```
 
 ## 可用工具
