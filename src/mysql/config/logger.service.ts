@@ -1,10 +1,18 @@
-import { ConsoleLogger, Injectable, LogLevel, OnModuleDestroy } from '@nestjs/common';
+import {
+  ConsoleLogger,
+  Injectable,
+  LogLevel,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { loadMySqlConfig } from './config.module';
 
 @Injectable()
-export class MySqlLoggerService extends ConsoleLogger implements OnModuleDestroy {
+export class MySqlLoggerService
+  extends ConsoleLogger
+  implements OnModuleDestroy
+{
   // NestJS uses 'log' instead of 'info' — map project levels to NestJS equivalents.
   private static readonly LEVEL_MAP: Partial<Record<string, LogLevel>> = {
     info: 'log',

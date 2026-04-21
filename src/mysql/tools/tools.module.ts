@@ -4,15 +4,12 @@ import { ListTablesTool } from './list-tables.tool';
 import { DescribeTableTool } from './describe-table.tool';
 import { ExecuteQueryTool } from './execute-query.tool';
 import { ListDatabasesTool } from './list-databases.tool';
-import { loadMySqlConfig } from '../config/config.module';
-
-const config = loadMySqlConfig();
 
 @Module({
   imports: [
     McpModule.forFeature(
       [ListTablesTool, DescribeTableTool, ExecuteQueryTool, ListDatabasesTool],
-      config.mcp.serverName,
+      process.env.MCP_SERVER_NAME ?? 'mysql-mcp-server',
     ),
   ],
   providers: [

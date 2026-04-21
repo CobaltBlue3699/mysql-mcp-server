@@ -161,6 +161,7 @@ describe('MySqlService', () => {
       mockPool.query.mockResolvedValueOnce([[], []]);
       await service.executeQuery('SELECT 1');
       expect(mockPool.query).toHaveBeenCalledWith(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expect.not.objectContaining({ timeout: expect.anything() }),
       );
     });
@@ -168,7 +169,7 @@ describe('MySqlService', () => {
     it('should remove query from pendingQueries after completion', async () => {
       mockPool.query.mockResolvedValueOnce([mockRows, mockFields]);
       await service.executeQuery('SELECT 1');
-      // Access private field via bracket notation for testing
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect((service as any).pendingQueries).toHaveLength(0);
     });
 
@@ -177,6 +178,7 @@ describe('MySqlService', () => {
       await expect(service.executeQuery('INVALID SQL')).rejects.toThrow(
         'Query failed',
       );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect((service as any).pendingQueries).toHaveLength(0);
     });
   });
@@ -242,6 +244,7 @@ describe('MySqlService', () => {
 
       // Inject a never-resolving pending query
       const neverResolves = new Promise(() => {});
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       (service as any).pendingQueries = [neverResolves];
 
       const shutdownPromise = service.shutdown();
